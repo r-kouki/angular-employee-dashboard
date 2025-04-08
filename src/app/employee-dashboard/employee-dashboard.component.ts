@@ -39,7 +39,8 @@ export class EmployeeDashboardComponent implements OnInit {
     this.employeeModelObj.mobile = this.formValue.value.mobile;
     this.employeeModelObj.salary = this.formValue.value.salary;
     
-    // Convert currentMaxId to string for the ID to match db.json format
+    // The ID will be assigned next available number in the sequence
+    // The reordering function in the API service will handle ordered IDs
     this.employeeModelObj.id = this.currentMaxId + 1;
     
     // Convert the ID to string when sending to the API
@@ -51,31 +52,25 @@ export class EmployeeDashboardComponent implements OnInit {
     this.api.postEmployee(employeeToSave)
     .subscribe(res => {
       console.log(res);
-      alert("employee added successfully");
+      alert("Employee added successfully");
       this.formValue.reset();
       this.getAllEmployee();
     },
     err => {
-      alert("something went wrong");
+      alert("Something went wrong");
     });
   }
   
   getAllEmployee() {
     this.api.getALLEmployee().subscribe(res => {
+      // The employees should already be ordered by ID from the API service
       this.employeeData = res;
       
-      // Find the maximum ID from the retrieved data
+      // Find the maximum ID to prepare for the next employee's ID
       if (this.employeeData && this.employeeData.length > 0) {
-        // Convert string IDs to numbers before finding max
-        const numericIds = this.employeeData.map((emp: any) => parseInt(emp.id, 10));
-        // Filter out NaN values (in case there are non-numeric IDs)
-        const validIds = numericIds.filter((id: number) => !isNaN(id));
-        
-        if (validIds.length > 0) {
-          this.currentMaxId = Math.max(...validIds);
-        } else {
-          this.currentMaxId = 0;
-        }
+        this.currentMaxId = this.employeeData.length - 1;
+      } else {
+        this.currentMaxId = -1; // Start at 0 when adding the first employee
       }
     });
   }
@@ -84,7 +79,7 @@ export class EmployeeDashboardComponent implements OnInit {
     this.api.deleteEmployee(row.id).subscribe(res => {
       alert("Employee deleted successfully");
       this.getAllEmployee();
-    })
+    });
   }
   
   onEdit(row: any) {
@@ -112,7 +107,7 @@ export class EmployeeDashboardComponent implements OnInit {
     
     this.api.updateEmployee(employeeToUpdate, this.employeeModelObj.id)
       .subscribe(res => {
-        alert("Update successfuly");
+        alert("Updated successfully");
         this.formValue.reset();
         this.getAllEmployee();
       });
