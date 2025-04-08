@@ -1,0 +1,28 @@
+{
+  "posts": [
+    {
+      "id": "0",
+      "firstName": "premier",
+      "lastName": "employé",
+      "email": "first@gmail.com",
+      "mobile": "99112233",
+      "salary": "50000"
+    },
+    {
+      "id": "1",
+      "firstName": "ali",
+      "lastName": "aloulou",
+      "email": "alou@gmail.com",
+      "mobile": "26",
+      "salary": "200000"
+    },
+    {
+      "id": 2,
+      "firstName": "lotfi",
+      "lastName": "mohmed",
+      "email": "kouki@kouki.com",
+      "mobile": "9686776876",
+      "salary": "700"
+    }
+  ]
+}
