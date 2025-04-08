@@ -9,14 +9,6 @@
       "salary": "50000"
     },
     {
-      "id": "1",
-      "firstName": "ali",
-      "lastName": "aloulou",
-      "email": "alou@gmail.com",
-      "mobile": "26",
-      "salary": "200000"
-    },
-    {
       "id": 2,
       "firstName": "lotfi",
       "lastName": "mohmed",

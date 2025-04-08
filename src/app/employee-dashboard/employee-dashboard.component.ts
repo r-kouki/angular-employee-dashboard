@@ -17,7 +17,7 @@ export class EmployeeDashboardComponent implements OnInit {
   formValue !: FormGroup;
   employeeModelObj: EmployeeModel = new EmployeeModel();
   employeeData !: any;
-  currentMaxId: number = 0; // Initialisation du compteur pour l'IID
+  currentMaxId: number = 0;
   
   constructor(private formBuilder: FormBuilder, private api: ApiService) {}
   
@@ -38,11 +38,17 @@ export class EmployeeDashboardComponent implements OnInit {
     this.employeeModelObj.email = this.formValue.value.email;
     this.employeeModelObj.mobile = this.formValue.value.mobile;
     this.employeeModelObj.salary = this.formValue.value.salary;
-    // Générer un ID unique pour le nouvel employé en incrémentant un compteur
-    this.employeeModelObj.id = ++this.currentMaxId;
-    // Incrémenter le compteur à chaque ajout
+    
+    // Convert currentMaxId to string for the ID to match db.json format
+    this.employeeModelObj.id = this.currentMaxId + 1;
+    
+    // Convert the ID to string when sending to the API
+    const employeeToSave = {
+      ...this.employeeModelObj,
+      id: String(this.employeeModelObj.id)
+    };
 
-    this.api.postEmployee(this.employeeModelObj)
+    this.api.postEmployee(employeeToSave)
     .subscribe(res => {
       console.log(res);
       alert("employee added successfully");
@@ -56,15 +62,22 @@ export class EmployeeDashboardComponent implements OnInit {
   
   getAllEmployee() {
     this.api.getALLEmployee().subscribe(res => {
-    this.employeeData = res;
-    
-    // Find the maximum ID from the retrieved data
-    if (this.employeeData && this.employeeData.length > 0) {
-    const maxId = Math.max(...this.employeeData.map((emp: any) => emp.id));
-    this.currentMaxId = maxId;
-    }
+      this.employeeData = res;
+      
+      // Find the maximum ID from the retrieved data
+      if (this.employeeData && this.employeeData.length > 0) {
+        // Convert string IDs to numbers before finding max
+        const numericIds = this.employeeData.map((emp: any) => parseInt(emp.id, 10));
+        // Filter out NaN values (in case there are non-numeric IDs)
+        const validIds = numericIds.filter((id: number) => !isNaN(id));
+        
+        if (validIds.length > 0) {
+          this.currentMaxId = Math.max(...validIds);
+        } else {
+          this.currentMaxId = 0;
+        }
+      }
     });
-    
   }
   
   deleteEmployee(row: any){
@@ -75,7 +88,8 @@ export class EmployeeDashboardComponent implements OnInit {
   }
   
   onEdit(row: any) {
-    this.employeeModelObj.id = row.id;
+    // Convert string ID to number if needed
+    this.employeeModelObj.id = typeof row.id === 'string' ? parseInt(row.id, 10) : row.id;
     this.formValue.controls['firstName'].setValue(row.firstName);
     this.formValue.controls['lastName'].setValue(row.lastName);
     this.formValue.controls['email'].setValue(row.email);
@@ -90,7 +104,13 @@ export class EmployeeDashboardComponent implements OnInit {
     this.employeeModelObj.mobile = this.formValue.value.mobile;
     this.employeeModelObj.salary = this.formValue.value.salary;
     
-    this.api.updateEmployee(this.employeeModelObj, this.employeeModelObj.id)
+    // Convert ID to string when updating
+    const employeeToUpdate = {
+      ...this.employeeModelObj,
+      id: String(this.employeeModelObj.id)
+    };
+    
+    this.api.updateEmployee(employeeToUpdate, this.employeeModelObj.id)
       .subscribe(res => {
         alert("Update successfuly");
         this.formValue.reset();
